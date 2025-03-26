@@ -29,12 +29,7 @@ class KMeans:
                 X (list or np.array): list(matrix) of all pixel values
                     if matrix has more than 2 dimensions, the dimensionality of the sample space is the length of
                     the last dimension
-        """
-        #######################################################
-        ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
-        ##  AND CHANGE FOR YOUR OWN CODE
-        #######################################################
-        
+        """        
         npArray = np.array(X,dtype=float)
         if(npArray.ndim == 3):
             npArray = npArray.reshape(-1,3)
@@ -71,11 +66,6 @@ class KMeans:
         """
         Initialization of centroids
         """
-
-        #######################################################
-        ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
-        ##  AND CHANGE FOR YOUR OWN CODE
-        #######################################################
         if self.options['km_init'].lower() == 'first':
             punts_unics = np.unique(self.X, axis=0)
             self.centroids = punts_unics[:self.K]
@@ -100,7 +90,8 @@ class KMeans:
         ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
         ##  AND CHANGE FOR YOUR OWN CODE
         #######################################################
-        self.labels = np.random.randint(self.K, size=self.X.shape[0])
+        distancia = distance(self.X, self.centroids)
+        self.labels = np.argmin(distancia, axis=1)
 
     def get_centroids(self):
         """
@@ -166,12 +157,8 @@ def distance(X, C):
         dist: PxK numpy array position ij is the distance between the
         i-th point of the first set an the j-th point of the second set
     """
+    return np.linalg.norm(X[:, np.newaxis] - C, axis=2)
 
-    #########################################################
-    ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
-    ##  AND CHANGE FOR YOUR OWN CODE
-    #########################################################
-    return np.random.rand(X.shape[0], C.shape[0])
 
 
 def get_colors(centroids):

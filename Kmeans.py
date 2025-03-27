@@ -103,7 +103,6 @@ class KMeans:
         #######################################################
         self.old_centroids = self.centroids
         centroides = np.zeros_like(self.centroids)
-        self.get_labels()
         for i in range(self.centroids.shape[0]):
             grupo = self.X[self.labels == i]
             if len(grupo) > 0:
@@ -181,9 +180,12 @@ def get_colors(centroids):
     Returns:
         labels: list of K labels corresponding to one of the 11 basic colors
     """
+    probs = utils.get_color_prob(centroids)
+    indices = np.argmax(probs, axis = 1)
+    colores =[]
+    for i in indices:
+        colores.append(utils.colors[i])
+    return colores
+    
 
-    #########################################################
-    ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
-    ##  AND CHANGE FOR YOUR OWN CODE
-    #########################################################
-    return list(utils.colors)
+    

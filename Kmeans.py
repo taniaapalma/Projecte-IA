@@ -67,8 +67,8 @@ class KMeans:
         Initialization of centroids
         """
         if self.options['km_init'].lower() == 'first':
-            punts_unics = np.unique(self.X, axis=0)
-            self.centroids = punts_unics[:self.K]
+            punts_unics, indice = np.unique(self.X, axis=0, return_index=True)
+            self.centroids = self.X[np.sort(indice)[:self.K]]
            
         elif self.options['km_init'].lower() == 'random':
             punts = np.random.choice(self.X.shape[0], self.K, replace=False)
@@ -97,7 +97,17 @@ class KMeans:
         ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
         ##  AND CHANGE FOR YOUR OWN CODE
         #######################################################
-        pass
+        self.old_centroids = self.centroids
+        centroides = np.zeros_like(self.centroids)
+        self.get_labels()
+        for i in range(self.centroids.shape[0]):
+            grupo = self.X[self.labels == i]
+            if len(grupo) > 0:
+                centroides[i] = np.mean(grupo, axis=0)
+            else:
+                centroides[i] = self.old_centroids[i]
+        self.centroids = centroides
+
 
     def converges(self):
         """

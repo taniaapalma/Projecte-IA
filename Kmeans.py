@@ -121,7 +121,8 @@ class KMeans:
         ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
         ##  AND CHANGE FOR YOUR OWN CODE
         #######################################################
-        return True
+
+        return np.allclose(self.centroids, self.old_centroids, self.options['tolerance'])
 
     def fit(self):
         """

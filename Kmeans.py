@@ -93,10 +93,6 @@ class KMeans:
         """
         Calculates coordinates of centroids based on the coordinates of all the points assigned to the centroid
         """
-        #######################################################
-        ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
-        ##  AND CHANGE FOR YOUR OWN CODE
-        #######################################################
         self.old_centroids = self.centroids
         centroides = np.zeros_like(self.centroids)
         self.get_labels()

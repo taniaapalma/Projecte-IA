@@ -129,29 +129,32 @@ class KMeans:
         """
          returns the within class distance of the current clustering
         """
-        d_total = 0
-        distancias = distance(self.X, self.centroids)
-        for i in range(len(self.labels)):
-            d_total += distancias[i, self.labels[i]]**2
-        return d_total
+        d_total = 0.0
+        for centroide in range(self.K):
+            grupo = self.X[self.labels == centroide]
+            if len(grupo)> 0:
+                distancia = np.linalg.norm(grupo - self.centroids[centroide], axis=1)
+                d_total = d_total + np.sum(distancia*distancia)
+            self.WCD = d_total/len(self.X)
+        return self.WCD
 
     def find_bestK(self, max_K):
         """
          sets the best k analysing the results up to 'max_K' clusters
         """
-        WCD = []
+        wcdAntes = None
+        buscada = max_K
         for k in range(2, max_K + 1):
             kmeans = KMeans(self.X, K=k, options=self.options)
             kmeans.fit()
-            WCD.append(kmeans.withinClassDistance())
-        
-        for k in range(1, len(WCD)):
-            percent_dec = 100 * (WCD[k] / WCD[k - 1])
-            if 100 - percent_dec < max_K:
-                self.K = k + 1
-                return
-        
-        self.K = max_K
+            wcdActual = kmeans.withinClassDistance()
+            if wcdAntes is not None:
+                caida = 100*(wcdAntes-wcdActual)/wcdAntes
+                if caida < 20:
+                    buscada = k - 1
+                    break
+            wcdAntes = wcdActual
+        self.K = buscada
 
 
 def distance(X, C):

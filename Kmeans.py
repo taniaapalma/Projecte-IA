@@ -104,7 +104,7 @@ class KMeans:
         self.old_centroids = self.centroids
         centroides = np.zeros_like(self.centroids)
         self.get_labels()
-        for i in range(self.centroids):
+        for i in range(self.centroids.shape[0]):
             grupo = self.X[self.labels == i]
             if len(grupo) > 0:
                 centroides[i] = np.mean(grupo, axis=0)

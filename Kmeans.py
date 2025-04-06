@@ -169,7 +169,7 @@ def distance(X, C):
         i-th point of the first set an the j-th point of the second set
     """
     return np.linalg.norm(X[:, np.newaxis] - C, axis=2)
-
+    
 
 
 def get_colors(centroids):

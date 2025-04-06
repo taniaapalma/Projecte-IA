@@ -36,7 +36,11 @@ class KNN:
         ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
         ##  AND CHANGE FOR YOUR OWN CODE
         #######################################################
-        self.neighbors = np.random.randint(k, size=[test_data.shape[0], k])
+        datos = np.array(test_data, dtype=float)
+        datos = datos.reshape(test_data.shape[0], -1)
+        distancias = cdist(datos,self.train_data,metric='euclidean')
+        indices = np.argsort(distancias, axis=1)[:, :k]
+        self.neighbors = self.labels[indices]
 
     def get_class(self):
         """

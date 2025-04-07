@@ -32,13 +32,9 @@ class KNN:
         :return: the matrix self.neighbors is created (NxK)
                  the ij-th entry is the j-th nearest train point to the i-th test point
         """
-        #######################################################
-        ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
-        ##  AND CHANGE FOR YOUR OWN CODE
-        #######################################################
         datos = np.array(test_data, dtype=float)
-        datos = datos.reshape(test_data.shape[0], -1)
-        distancias = cdist(datos,self.train_data,metric='euclidean')
+        prueba = datos.reshape(test_data.shape[0], -1)
+        distancias = cdist(prueba,self.train_data,metric='euclidean')
         indices = np.argsort(distancias, axis=1)[:, :k]
         self.neighbors = self.labels[indices]
 
@@ -48,11 +44,12 @@ class KNN:
         :return: 1 array of Nx1 elements. For each of the rows in self.neighbors gets the most voted value
                 (i.e. the class at which that row belongs)
         """
-        #######################################################
-        ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
-        ##  AND CHANGE FOR YOUR OWN CODE
-        #######################################################
-        return np.random.randint(10, size=self.neighbors.size), np.random.random(self.neighbors.size)
+        preds = []
+        for i in range(self.neighbors.shape[0]):
+            pred = max(self.neighbors[i], key=lambda x: (np.sum(self.neighbors[i] == x), -np.where(self.neighbors[i] == x)[0][0]))
+            preds.append(pred)
+        return np.array(preds)
+
 
     def predict(self, test_data, k):
         """

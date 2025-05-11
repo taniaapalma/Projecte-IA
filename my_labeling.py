@@ -18,3 +18,17 @@ if __name__ == '__main__':
     cropped_images = crop_images(imgs, upper, lower)
 
     # You can start coding your functions here
+
+    def fit(self):
+        """
+        Runs K-Means algorithm until it converges or until the number of iterations is smaller
+        than the maximum number of iterations.
+        """
+        self._init_centroids()
+        self.num_iter = 0
+        while self.num_iter < self.options['max_iter']:
+            self.get_labels()
+            self.get_centroids()
+            self.num_iter += 1
+            if self.converges():
+                break

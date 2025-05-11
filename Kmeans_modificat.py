@@ -185,13 +185,13 @@ class KMeans:
             for k in range(2, max_K + 1):
                 kmeans = KMeans(self.X, K=k, options=self.options)
                 kmeans.fit()
-                InterActual = kmeans.interClass()
-                if wcdAntes is not None:
-                    caida = 100*(wcdAntes-wcdActual)/wcdAntes
+                interActual = kmeans.interClass()
+                if interAntes is not None:
+                    caida = 100*(interAntes-interActual)/interAntes
                     if caida < 20:
                         buscada = k - 1
                         break
-                InterAntes = InterActual
+                interAntes = interActual
             self.K = buscada
         
         if self.options['fitting'] == 'fisher':

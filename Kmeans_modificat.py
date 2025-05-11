@@ -74,12 +74,51 @@ class KMeans:
             punts = np.random.choice(self.X.shape[0], self.K, replace=False)
             self.centroids = self.X[punts]
 
-        elif self.options['km_init'].lower() == 'custom':
-            self.centroids = np.random.rand(self.K, self.X.shape[1]) * 255  # Random values between 0 and 255
+        elif self.options['km_init'].lower() == 'farthest':
+            self._init_farthest_first()
+        
+        elif self.options['km_init'].lower() == 'uniform':
+            self._init_uniform()
+
         else:
             self.centroids = None
 
         self.old_centroids = np.zeros_like(self.centroids) if self.centroids is not None else None
+
+    def _init_uniform(self):
+        dim = self.X.shape[1]  # Dimensionalidad de los datos (ej: 3 para RGB)
+        max_bins = int(np.ceil(self.K ** (1/dim)))  # Divisiones por eje
+        edges = [np.linspace(0, 255, max_bins + 1) for _ in range(dim)]
+        theoretical_centers = np.stack(np.meshgrid(*[(e[:-1] + e[1:])/2 for e in edges]), axis=-1).reshape(-1, dim)
+        
+        centroids = []
+        for center in theoretical_centers:
+            distances = np.linalg.norm(self.X - center, axis=1)
+            closest_idx = np.argmin(distances)
+            centroids.append(self.X[closest_idx])
+        
+        # Si hay menos celdas que K, completar con puntos aleatorios
+        if len(centroids) < self.K:
+            extra = self.X[np.random.choice(self.X.shape[0], self.K - len(centroids), replace=False)]
+            centroids.extend(extra)
+        
+        self.centroids = np.array(centroids[:self.K])  # Asegurar K centroides
+
+    def _init_farthest_first(self):
+        """Secuencial Lejano (Farthest-First)"""
+        centroids = [self.X[np.random.choice(self.X.shape[0])]]
+        for _ in range(1, self.K):
+            distances = distance(self.X, np.array(centroids))
+            min_distances = np.min(distances, axis=1)
+            farthest_idx = np.argmax(min_distances)
+            centroids.append(self.X[farthest_idx])
+        self.centroids = np.array(centroids)
+
+
+
+
+
+
 
 
 

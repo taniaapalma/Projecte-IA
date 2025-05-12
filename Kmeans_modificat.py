@@ -203,7 +203,7 @@ class KMeans:
         """
          sets the best k analysing the results up to 'max_K' clusters
         """
-        if self.options['fitting'] == 'WCD':
+        if self.options['fitting'].lower() == 'WCD':
             wcdAntes = None
             buscada = max_K
             for k in range(2, max_K + 1):
@@ -218,7 +218,7 @@ class KMeans:
                 wcdAntes = wcdActual
             self.K = buscada
 
-        if self.options['fitting'] == 'Inter':
+        if self.options['fitting'].lower() == 'Inter':
             self.Inter = []
             interAntes = None
             buscada = max_K
@@ -228,7 +228,7 @@ class KMeans:
                 interActual = kmeans.interClass()
                 if interAntes is not None:
                     caida = 100*(interAntes-interActual)/interAntes
-                    if caida < 20:
+                    if caida > 10:
                         buscada = k - 1
                         break
                 interAntes = interActual

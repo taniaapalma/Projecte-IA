@@ -10,7 +10,7 @@ if __name__ == '__main__':
 
     # Load all the images and GT
     train_imgs, train_class_labels, train_color_labels, test_imgs, test_class_labels, \
-        test_color_labels = read_dataset(root_folder='./images/', gt_json='./images/gt.json')
+        test_color_labels = read_dataset(root_folder='images/', gt_json='images/gt.json')
 
     # List with all the existent classes
     classes = list(set(list(train_class_labels) + list(test_class_labels)))
@@ -21,7 +21,7 @@ if __name__ == '__main__':
 
     # You can start coding your functions here
     options = {'fitting':'Inter'}
-    km = KMeans(test_color_labels,1,options)
+    km = KMeans(train_imgs[0],1, options)
     km.fit()
     inter_values = km.Inter
     Ks = [2,len(inter_values)]

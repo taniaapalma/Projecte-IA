@@ -3,7 +3,7 @@ __group__ = '11'
 
 import numpy as np
 import utils
-
+import matplotlib as plt
 
 class KMeans:
 
@@ -54,6 +54,8 @@ class KMeans:
             options['max_iter'] = np.inf
         if 'fitting' not in options:
             options['fitting'] = 'WCD'  # within class distance.
+
+        
 
         # If your methods need any other parameter you can add it to the options dictionary
         self.options = options
@@ -176,24 +178,76 @@ class KMeans:
                 d_total = d_total + np.sum(distancia*distancia)
             self.WCD = d_total/len(self.X)
         return self.WCD
+    
+    def interClass(self):
+        """
+         Devuelve distancia interclass
+        """
+        d_total = 0.0
+        conteo = 0
+        for i in range(self.K):
+            for j in range(self.K):
+                d_total += np.linalg.norm(self.centroids[i] - self.centroids[j])
+                conteo += 1
+        self.Inter.append(d_total/conteo)
+        return self.Inter[-1]
+    
+    def fisher(self):
+        Intra = self.withinClassDistance()
+        Inter = self.interClass()
+        self.disFish = Intra/Inter
+        return self.disFish
+
 
     def find_bestK(self, max_K):
         """
          sets the best k analysing the results up to 'max_K' clusters
         """
-        wcdAntes = None
-        buscada = max_K
-        for k in range(2, max_K + 1):
-            kmeans = KMeans(self.X, K=k, options=self.options)
-            kmeans.fit()
-            wcdActual = kmeans.withinClassDistance()
-            if wcdAntes is not None:
-                caida = 100*(wcdAntes-wcdActual)/wcdAntes
-                if caida < 20:
-                    buscada = k - 1
-                    break
-            wcdAntes = wcdActual
-        self.K = buscada
+        if self.options['fitting'] == 'WCD':
+            wcdAntes = None
+            buscada = max_K
+            for k in range(2, max_K + 1):
+                kmeans = KMeans(self.X, K=k, options=self.options)
+                kmeans.fit()
+                wcdActual = kmeans.withinClassDistance()
+                if wcdAntes is not None:
+                    caida = 100*(wcdAntes-wcdActual)/wcdAntes
+                    if caida < 20:
+                        buscada = k - 1
+                        break
+                wcdAntes = wcdActual
+            self.K = buscada
+
+        if self.options['fitting'] == 'Inter':
+            self.Inter = []
+            interAntes = None
+            buscada = max_K
+            for k in range(2, max_K + 1):
+                kmeans = KMeans(self.X, K=k, options=self.options)
+                kmeans.fit()
+                interActual = kmeans.interClass()
+                if interAntes is not None:
+                    caida = 100*(interAntes-interActual)/interAntes
+                    if caida < 20:
+                        buscada = k - 1
+                        break
+                interAntes = interActual
+            self.K = buscada
+        
+        if self.options['fitting'] == 'fisher':
+            fisherAntes = None
+            buscada = max_K
+            for k in range(2, max_K + 1):
+                kmeans = KMeans(self.X, K=k, options=self.options)
+                kmeans.fit()
+                fisherActual = kmeans.fisher()
+                if wcdAntes is not None:
+                    caida = 100*(fisherAntes-fisherActual)/fisherAntes
+                    if caida < 20:
+                        buscada = k - 1
+                        break
+                fisherAntes = fisherActual
+            self.K = buscada
 
 
 def distance(X, C):
@@ -228,4 +282,3 @@ def get_colors(centroids):
     return colores
     
 
-    

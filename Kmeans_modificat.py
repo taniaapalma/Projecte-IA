@@ -3,7 +3,7 @@ __group__ = '11'
 
 import numpy as np
 import utils
-
+import matplotlib as plt
 
 class KMeans:
 
@@ -145,19 +145,19 @@ class KMeans:
          Devuelve distancia interclass
         """
         d_total = 0.0
+        conteo = 0
         for i in range(self.K):
-            distancia = 0.0
-            for j in range(self.k):
-                distancia += np.linalg.norm(self.centroids[i] - self.centroids[j])
-            distancia = distancia/len(self.k)
-            d_total += distancia 
-        d_total = d_total/len(self.k) 
-        return d_total
+            for j in range(self.K):
+                d_total += np.linalg.norm(self.centroids[i] - self.centroids[j])
+                conteo += 1
+        self.Inter.append(d_total/conteo)
+        return self.Inter[-1]
     
     def fisher(self):
         Intra = self.withinClassDistance()
         Inter = self.interClass()
-        return Intra/Inter
+        self.disFish = Intra/Inter
+        return self.disFish
 
 
     def find_bestK(self, max_K):
@@ -180,6 +180,7 @@ class KMeans:
             self.K = buscada
 
         if self.options['fitting'] == 'Inter':
+            self.Inter = []
             interAntes = None
             buscada = max_K
             for k in range(2, max_K + 1):
@@ -242,4 +243,3 @@ def get_colors(centroids):
     return colores
     
 
-    

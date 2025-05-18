@@ -228,7 +228,7 @@ if __name__ == '__main__':
         print(f"Probando con K={k}...")
         knn = KNN(train_imgs, train_class_labels)
         predicted = knn.predict(test_imgs, k=k)
-        accuracy = Get_shape_accuracy(predicted, test_class_labels)
+        accuracy = Get_shape_accuracy(predicted, test_class_labels) 
         accuracies.append(accuracy)
         print(f"Precisión para k={k}: {accuracy * 100}%")
 

@@ -3,9 +3,12 @@ __group__ = 'TO_BE_FILLED'
 
 from utils_data import read_dataset, read_extended_dataset, crop_images
 from Kmeans_modificat import * 
-from KNN import * 
+from KNN_modificat import * 
 import matplotlib.pyplot as plt
 import math
+import time
+from scipy.spatial.distance import cdist
+from sklearn.metrics import accuracy_score
 
 
 if __name__ == '__main__':
@@ -183,11 +186,7 @@ if __name__ == '__main__':
         plt.tight_layout(rect=[0, 0, 1, 0.96])  # Dejar espacio para el título
         plt.show()
 
-    
-    
-    
-    
-    
+
 
     def Get_shape_accuracy(predicted_labels, ground_truth_labels):
         
@@ -204,7 +203,7 @@ if __name__ == '__main__':
 
         return correctas / total if total > 0 else 0.0
     
-
+    
     #Pruebas--------------------------------------------------
             
     #Retrieval_by_color(imgs, color_labels, 'red')
@@ -218,7 +217,7 @@ if __name__ == '__main__':
     accuracy = Get_shape_accuracy(predicted, test_class_labels)
     print(f"Precisión de forma: {accuracy * 100}%")
 
-    """
+    
 
     k_values = list(range(1, 13))  # De k=1 a k=12
     accuracies = []
@@ -235,10 +234,77 @@ if __name__ == '__main__':
     # Mostrar gráfica
     plt.figure(figsize=(8, 5))
     plt.plot(k_values, [a * 100 for a in accuracies], marker='o', color='blue')
-    plt.title('Precisión en función de K (clasificación de forma)')
+    plt.title('Precisión en función de K')
     plt.xlabel('K (número de vecinos)')
     plt.ylabel('Precisión (%)')
     plt.grid(True)
     plt.xticks(k_values)
     plt.ylim(0, 100)
     plt.show()
+    
+    """
+    #FUNCIONES PARA EVALUAR METRICAS DISTANCIA KNN
+
+    def evaluar_todas_metricas(train_imgs, train_labels, test_imgs, test_labels, ks=[1,3,4,5], ps=[3, 4]):
+        resultados = {}
+
+        for k in ks:
+            print(f"\nEvaluando con k = {k}")
+            resultados[k] = {}
+            for metrica in ['euclidean', 'cityblock', 'cosine']:
+                knn = KNN(train_imgs, train_labels, metric=metrica)
+                start = time.time()
+                preds = knn.predict(test_imgs, k)
+                end = time.time()
+                acc = accuracy_score(test_labels, preds)
+                tiempo = end - start
+                resultados[k][metrica] = (acc, tiempo)
+                print(f"  {metrica:<10}: Accuracy = {acc:.4f}, Tiempo = {tiempo:.4f}s")
+
+        return resultados
+
+
+    def graficar_todos_accuracy_vs_tiempo(resultados):
+        ks = sorted(resultados.keys())
+        num_k = len(ks)
+
+        fig, axes = plt.subplots(num_k, 1, figsize=(10, 5 * num_k), sharex=True)
+
+        if num_k == 1:
+            axes = [axes]  # para manejar el caso de un solo subplot
+
+        for i, k in enumerate(ks):
+            datos = resultados[k]
+            metricas = list(datos.keys())
+            accuracies = [v[0] for v in datos.values()]
+            tiempos = [v[1] for v in datos.values()]
+
+            ax1 = axes[i]
+            ax2 = ax1.twinx()
+
+            # Accuracy - barras azules
+            ax1.bar(metricas, accuracies, color='tab:blue', alpha=0.6, label='Accuracy')
+            ax1.set_ylabel('Accuracy', color='tab:blue')
+            ax1.tick_params(axis='y', labelcolor='tab:blue')
+            ax1.set_ylim(0, 1)
+
+            # Tiempo - línea roja
+            ax2.plot(metricas, tiempos, color='tab:red', marker='o', label='Tiempo (s)')
+            ax2.set_ylabel('Tiempo (s)', color='tab:red')
+            ax2.tick_params(axis='y', labelcolor='tab:red')
+
+            ax1.set_title(f"Accuracy vs Tiempo de ejecución (k = {k})")
+            ax1.set_xticks(range(len(metricas)))
+            ax1.set_xticklabels(metricas, rotation=45)
+
+        plt.tight_layout()
+        plt.show()
+
+
+    # Ejecutar evaluación con múltiples métricas y k
+    resultados = evaluar_todas_metricas(train_imgs, train_class_labels, test_imgs, test_class_labels)
+
+    # Visualizar resultados
+    graficar_todos_accuracy_vs_tiempo(resultados)
+
+    

@@ -3,6 +3,7 @@ __group__ = 'TO_BE_FILLED'
 
 from utils_data import read_dataset, read_extended_dataset, crop_images
 from Kmeans_modificat import * 
+from KNN import * 
 import matplotlib.pyplot as plt
 import math
 
@@ -23,23 +24,6 @@ if __name__ == '__main__':
     # You can start coding your functions here
 
     """
-    options = {'fitting':'Inter'}
-    km = KMeans(train_imgs[0],1, options)
-    km.fit()
-    inter_values = km.Inter
-    Ks = [2,len(inter_values)]
-    plt.figure(figsize=(8, 5))
-    plt.plot(Ks, inter_values, marker='o', color='royalblue', label='Interclass Distance')
-    plt.xlabel('Número de Clústers (K)')
-    plt.ylabel('Distancia Interclass')
-    plt.title('Distancia Interclass vs Número de Clústers')
-    plt.grid(True)
-    plt.legend()
-    plt.show()
-
-
-
-
     # FUNCIONES RETRIEVAL
 
      VERSION SILVIA:
@@ -204,10 +188,57 @@ if __name__ == '__main__':
     
     
     
+
+    def Get_shape_accuracy(predicted_labels, ground_truth_labels):
+        
+        # Calcular la precisión para cada imagen (1 si coincide, 0 si no)
+        if len(predicted_labels) != len(ground_truth_labels):
+            raise ValueError("Las listas de etiquetas deben tener la misma longitud.")
+
+        correctas = 0
+        total = len(predicted_labels)
+
+        for pred, real in zip(predicted_labels, ground_truth_labels):
+            if pred == real:
+                correctas += 1
+
+        return correctas / total if total > 0 else 0.0
     
-    # Pruebas--------------------------------------------------
-        
-        
+
+    #Pruebas--------------------------------------------------
+            
     #Retrieval_by_color(imgs, color_labels, 'red')
     #Retrieval_by_shape(imgs, class_labels, "heels")
     #Retrieval_combined(imgs, class_labels, color_labels, "shirts", "red")
+
+    """
+    knn = KNN(train_imgs, train_class_labels)
+    predicted = knn.predict(test_imgs, k=1)
+
+    accuracy = Get_shape_accuracy(predicted, test_class_labels)
+    print(f"Precisión de forma: {accuracy * 100}%")
+
+    """
+
+    k_values = list(range(1, 13))  # De k=1 a k=12
+    accuracies = []
+
+    # Ejecutar pruebas
+    for k in k_values:
+        print(f"Probando con K={k}...")
+        knn = KNN(train_imgs, train_class_labels)
+        predicted = knn.predict(test_imgs, k=k)
+        accuracy = Get_shape_accuracy(predicted, test_class_labels)
+        accuracies.append(accuracy)
+        print(f"Precisión para k={k}: {accuracy * 100}%")
+
+    # Mostrar gráfica
+    plt.figure(figsize=(8, 5))
+    plt.plot(k_values, [a * 100 for a in accuracies], marker='o', color='blue')
+    plt.title('Precisión en función de K (clasificación de forma)')
+    plt.xlabel('K (número de vecinos)')
+    plt.ylabel('Precisión (%)')
+    plt.grid(True)
+    plt.xticks(k_values)
+    plt.ylim(0, 100)
+    plt.show()

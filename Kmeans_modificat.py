@@ -16,8 +16,9 @@ class KMeans:
             """
         self.num_iter = 0
         self.K = K
-        self._init_X(X)
         self._init_options(options)  # DICT options
+        self._init_X(X)
+        
 
     #############################################################
     ##  THIS FUNCTION CAN BE MODIFIED FROM THIS POINT, if needed
@@ -29,11 +30,17 @@ class KMeans:
                 X (list or np.array): list(matrix) of all pixel values
                     if matrix has more than 2 dimensions, the dimensionality of the sample space is the length of
                     the last dimension
-        """        
-        npArray = np.array(X,dtype=float)
-        if(npArray.ndim == 3):
-            npArray = npArray.reshape(-1,3)
-        self.X = npArray
+        """  
+        npArray = np.array(X, dtype=float)
+
+        if npArray.ndim == 3 and self.options['11'] == True:
+            # Covierte espacio 11 dimensiones
+            npArray = utils.get_color_prob(npArray).reshape(-1, 11)
+        elif npArray.ndim == 3:
+            # Usa RGB normal
+            npArray = npArray.reshape(-1, 3)
+
+        self.X = npArray   
 
 
     def _init_options(self, options=None):
@@ -54,6 +61,8 @@ class KMeans:
             options['max_iter'] = np.inf
         if 'fitting' not in options:
             options['fitting'] = 'WCD'  # within class distance.
+        if '11' not in options:
+            options['11'] = False
 
         
 
@@ -107,6 +116,7 @@ class KMeans:
         self.centroids = np.array(centroids[:self.K])  # Asegurar K centroides
 
     def _init_farthest_first(self):
+        '''
         """Secuencial Lejano (Farthest-First)"""
         centroids = [self.X[np.random.choice(self.X.shape[0])]]
         for _ in range(1, self.K):
@@ -115,13 +125,28 @@ class KMeans:
             farthest_idx = np.argmax(min_distances)
             centroids.append(self.X[farthest_idx])
         self.centroids = np.array(centroids)
-
-
-
-
-
-
-
+        '''
+        # Seleccionar el primer centroide aleatoriamente
+        first_idx = np.random.choice(self.X.shape[0])
+        centroids = [self.X[first_idx]]
+        
+        # Seleccionar los K-1 centroides restantes
+        for _ in range(1, self.K):
+            # Calcular distancias de todos los puntos a los centroides actuales
+            distances = np.zeros((self.X.shape[0], len(centroids)))
+            
+            for i, centroid in enumerate(centroids):
+                # Calcular distancia euclidiana para cada dimensión
+                distances[:, i] = np.sqrt(np.sum((self.X - centroid) ** 2, axis=1))
+            
+            # Para cada punto, encontrar la distancia mínima a cualquier centroide
+            min_distances = np.min(distances, axis=1)
+            
+            # Seleccionar el punto más lejano como nuevo centroide
+            farthest_idx = np.argmax(min_distances)
+            centroids.append(self.X[farthest_idx])
+        
+        self.centroids = np.array(centroids)
 
 
     def get_labels(self):
@@ -186,15 +211,20 @@ class KMeans:
         d_total = 0.0
         conteo = 0
         for i in range(self.K):
-            for j in range(self.K):
+            for j in range(i+1, self.K):
                 d_total += np.linalg.norm(self.centroids[i] - self.centroids[j])
                 conteo += 1
-        self.Inter.append(d_total/conteo)
-        return self.Inter[-1]
+
+        if conteo == 0:
+            return 0.0
+            
+        return d_total/conteo
     
     def fisher(self):
         Intra = self.withinClassDistance()
         Inter = self.interClass()
+        if Inter < 1e-10:
+            return float('inf') 
         self.disFish = Intra/Inter
         return self.disFish
 
@@ -203,49 +233,60 @@ class KMeans:
         """
          sets the best k analysing the results up to 'max_K' clusters
         """
-        if self.options['fitting'].lower() == 'WCD':
+        if self.options['fitting'].lower() == 'wcd':
             wcdAntes = None
+            self.WCD = []
             buscada = max_K
             for k in range(2, max_K + 1):
                 kmeans = KMeans(self.X, K=k, options=self.options)
                 kmeans.fit()
                 wcdActual = kmeans.withinClassDistance()
+                self.WCD.append(wcdActual)
                 if wcdAntes is not None:
                     caida = 100*(wcdAntes-wcdActual)/wcdAntes
-                    if caida < 20:
+                    if caida < 80:
                         buscada = k - 1
                         break
+                self.centroids = kmeans.centroids
                 wcdAntes = wcdActual
             self.K = buscada
 
-        if self.options['fitting'].lower() == 'Inter':
-            self.Inter = []
+        if self.options['fitting'].lower() == 'inter':
+            self.Inter = []  # Asegúrate de que esté vacía al inicio
+            best_k = max_K
             interAntes = None
-            buscada = max_K
+
             for k in range(2, max_K + 1):
                 kmeans = KMeans(self.X, K=k, options=self.options)
                 kmeans.fit()
                 interActual = kmeans.interClass()
+                self.Inter.append(interActual)
+
                 if interAntes is not None:
-                    caida = 100*(interAntes-interActual)/interAntes
-                    if caida > 10:
-                        buscada = k - 1
+                    mejora = 100 * (interActual - interAntes) / interAntes
+                    if mejora < 80:
+                        best_k = k - 1
                         break
+                self.centroids = kmeans.centroids
                 interAntes = interActual
-            self.K = buscada
+
+            self.K = best_k
         
-        if self.options['fitting'] == 'fisher':
+        if self.options['fitting'].lower() == 'fisher':
             fisherAntes = None
             buscada = max_K
+            self.fish = []
             for k in range(2, max_K + 1):
                 kmeans = KMeans(self.X, K=k, options=self.options)
                 kmeans.fit()
                 fisherActual = kmeans.fisher()
-                if wcdAntes is not None:
+                self.fish.append(fisherActual)
+                if fisherAntes is not None:
                     caida = 100*(fisherAntes-fisherActual)/fisherAntes
-                    if caida < 20:
+                    if caida < 80:
                         buscada = k - 1
                         break
+                self.centroids = kmeans.centroids
                 fisherAntes = fisherActual
             self.K = buscada
 
@@ -265,7 +306,7 @@ def distance(X, C):
     
 
 
-def get_colors(centroids):
+def get_colors(centroids, Dim):
     """
     for each row of the numpy matrix 'centroids' returns the color label following the 11 basic colors as a LIST
     Args:
@@ -274,7 +315,10 @@ def get_colors(centroids):
     Returns:
         labels: list of K labels corresponding to one of the 11 basic colors
     """
-    probs = utils.get_color_prob(centroids)
+    if Dim == False:
+        probs = utils.get_color_prob(centroids)
+    else:
+        probs = centroids
     indices = np.argmax(probs, axis = 1)
     colores =[]
     for i in indices:

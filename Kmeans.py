@@ -16,12 +16,9 @@ class KMeans:
             """
         self.num_iter = 0
         self.K = K
-        self._init_X(X)
         self._init_options(options)  # DICT options
+        self._init_X(X)
 
-    #############################################################
-    ##  THIS FUNCTION CAN BE MODIFIED FROM THIS POINT, if needed
-    #############################################################
 
     def _init_X(self, X):
         """Initialization of all pixels, sets X as an array of data in vector form (PxD)
@@ -29,12 +26,21 @@ class KMeans:
                 X (list or np.array): list(matrix) of all pixel values
                     if matrix has more than 2 dimensions, the dimensionality of the sample space is the length of
                     the last dimension
-        """        
+        """  
         npArray = np.array(X,dtype=float)
+        '''      
         if(npArray.ndim == 3):
             npArray = npArray.reshape(-1,3)
         self.X = npArray
-
+        '''
+        if npArray.ndim == 3 and self.options.get('11', True):
+            # Convert to 11D color descriptor
+            npArray = utils.get_color_prob(npArray).reshape(-1, 11)
+        elif npArray.ndim == 3:
+            # Use default RGB
+            npArray = npArray.reshape(-1, 3)
+        
+        self.X  = npArray
 
     def _init_options(self, options=None):
         """
@@ -54,6 +60,8 @@ class KMeans:
             options['max_iter'] = np.inf
         if 'fitting' not in options:
             options['fitting'] = 'WCD'  # within class distance.
+        if '11' not in options:
+            options['11'] = False
 
         # If your methods need any other parameter you can add it to the options dictionary
         self.options = options

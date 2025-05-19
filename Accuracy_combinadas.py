@@ -1,9 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import time
+from KNN_modificat import *
 from Kmeans_modificat import KMeans, get_colors
 
-def accuracy_combinada_simple(imagenes, colores_reales, max_K, espacio_11d=False):
+def accuracy_combinada(imagenes, colores_reales, max_K, espacio_11d=False):
     """
     Evalúa la accuracy para todas las combinaciones de métodos de inicialización
     y heurísticas de KMeans, mostrando resultados en tablas simples.
@@ -346,7 +347,7 @@ if __name__ == "__main__":
     cropped_images = crop_images(imgs, upper, lower)
     
     # Ejecutar con un subconjunto pequeño para pruebas
-    resultados = accuracy_combinada_simple(test_imgs, test_color_labels, max_K=10, espacio_11d=True)
+    resultados = accuracy_combinada(train_imgs[:500], train_color_labels[:500], max_K=10, espacio_11d=True)
 
 
     # Acceder a los resultados
@@ -640,7 +641,7 @@ if __name__ == "__main__":
       }
     
 
-    def color_accuracy(testImg, colores_reales, max_K, opciones):
+    def get_color_accuracy(testImg, colores_reales, max_K, opciones):
       """
       Calcula la precisión en la detección de colores.
       
